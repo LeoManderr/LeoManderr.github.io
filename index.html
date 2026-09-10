@@ -1,0 +1,540 @@
+<title>Leonardo Malavé — Automatización e IA</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap">
+<style>
+/* Concept: an operations report. The work is scheduled jobs that leave logs
+   behind, so the page reads like one — serif for statements, monospace for
+   anything that was measured. Sober high-contrast palette: cool white ground,
+   near-black text, one deep navy accent. Single committed light world. */
+:root{
+  --bg:#FBFBFC; --surface:#FFFFFF; --edge:#D2D7DC; --rule:#E2E5E9;
+  --ink:#101418;        /* 16.9:1 on bg */
+  --ink-2:#39414A;      /*  9.4:1 */
+  --ink-3:#5A626B;      /*  5.9:1 */
+  --navy:#14406B;       /*  9.2:1 */
+  --navy-bright:#1B5490;
+  --fig:#0B2D4D;        /* 12.4:1 — measured values */
+  --navy-wash:#EDF1F6;
+  --f-display:"Newsreader",Georgia,"Times New Roman",serif;
+  --f-body:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --wrap:940px;
+  --gutter:clamp(18px,5vw,24px);
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);color:var(--ink);color-scheme:light;scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;margin:0;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}*{animation-duration:.001ms!important;transition-duration:.001ms!important;}}
+h1,h2,h3,p,ul,ol,dl,dd{margin:0;}
+ul,ol{list-style:none;padding:0;}
+a{color:inherit;}
+:where(a,button):focus-visible{outline:2px solid var(--navy);outline-offset:3px;border-radius:2px;}
+img,svg{max-width:100%;}
+
+.skip{position:absolute;left:-9999px;top:0;background:var(--navy);color:#fff;padding:10px 16px;z-index:60;}
+.skip:focus{left:0;}
+
+html.has-reveal [data-reveal]{opacity:.001;transform:translateY(14px);}
+html.has-reveal [data-reveal].is-in{opacity:1;transform:none;transition:opacity 600ms cubic-bezier(.22,.68,.3,1),transform 700ms cubic-bezier(.22,.68,.3,1);}
+
+/* ------------------------------ nav ------------------------------ */
+nav{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(150%) blur(10px);border-bottom:1px solid var(--rule);}
+.nav-inner{max-width:var(--wrap);margin:0 auto;padding:11px var(--gutter);display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.wordmark{text-decoration:none;display:flex;flex-direction:column;line-height:1.25;flex-shrink:0;}
+.wm-name{font-family:var(--f-display);font-size:17px;font-weight:500;letter-spacing:-.01em;}
+.wm-role{font-family:var(--f-mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);}
+.nav-links{display:flex;gap:2px;}
+.nav-links a{display:block;text-decoration:none;font-size:13.5px;color:var(--ink-2);padding:8px 11px;border-radius:3px;white-space:nowrap;transition:color 160ms ease,background-color 160ms ease;}
+.nav-links a:hover{color:var(--navy);background:var(--navy-wash);}
+.nav-links a.is-active{color:var(--navy);font-weight:600;}
+/* mobile: the nav scrolls instead of disappearing */
+@media (max-width:760px){
+  .nav-inner{flex-direction:column;align-items:stretch;gap:8px;padding:10px 0 0;}
+  .wordmark{padding-inline:var(--gutter);}
+  .nav-links{overflow-x:auto;gap:0;padding:0 var(--gutter) 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .nav-links::-webkit-scrollbar{display:none;}
+  .nav-links a{padding:7px 12px;font-size:13px;}
+}
+
+/* ------------------------------ hero ----------------------------- */
+.hero{max-width:var(--wrap);margin:0 auto;padding-block:clamp(40px,9vw,88px) clamp(34px,7vw,64px);padding-inline:var(--gutter);display:flex;flex-direction:column;gap:20px;align-items:flex-start;}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--navy);padding-bottom:3px;border-bottom:1px solid color-mix(in srgb,var(--navy) 40%,transparent);}
+.hero h1{font-family:var(--f-display);font-weight:500;font-size:clamp(30px,6.2vw,52px);line-height:1.08;letter-spacing:-.022em;max-width:19ch;text-wrap:balance;}
+.hero h1 em{font-style:normal;color:var(--navy);}
+.lead{font-size:clamp(16px,2.2vw,18.5px);color:var(--ink-2);max-width:54ch;line-height:1.62;}
+.for-who{display:flex;flex-wrap:wrap;gap:7px;}
+.for-who li{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.02em;color:var(--ink-2);background:var(--navy-wash);border:1px solid color-mix(in srgb,var(--navy) 14%,transparent);padding:4px 10px;border-radius:2px;}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:2px;}
+.btn-solid,.btn-line{display:inline-flex;align-items:center;justify-content:center;gap:9px;text-decoration:none;font-size:14.5px;font-weight:500;padding:13px 20px;min-height:46px;border-radius:2px;transition:transform 180ms cubic-bezier(.3,.7,.4,1),background-color 180ms ease,color 180ms ease,border-color 180ms ease;}
+.btn-solid{background:var(--navy);color:#fff;border:1px solid var(--navy);}
+.btn-solid:hover{background:var(--navy-bright);border-color:var(--navy-bright);transform:translateY(-2px);}
+.btn-line{background:var(--surface);color:var(--ink);border:1px solid var(--edge);}
+.btn-line:hover{border-color:var(--navy);color:var(--navy);transform:translateY(-2px);}
+.btn-solid svg,.btn-line svg{transition:transform 220ms cubic-bezier(.3,.7,.4,1);flex-shrink:0;}
+.btn-solid:hover svg,.btn-line:hover svg{transform:translate(2px,-2px);}
+@media (max-width:440px){.actions{width:100%;}.btn-solid,.btn-line{flex:1 1 100%;}}
+
+.figures{display:flex;flex-wrap:wrap;gap:16px 40px;margin-top:10px;padding-top:22px;border-top:1px solid var(--rule);width:100%;}
+.figures>div{min-width:132px;}
+.figures dt{font-family:var(--f-mono);font-size:20px;font-weight:600;color:var(--fig);font-variant-numeric:tabular-nums;letter-spacing:-.015em;}
+.figures dd{font-size:12.5px;color:var(--ink-3);margin-top:3px;line-height:1.45;}
+
+/* ---------------------------- sections --------------------------- */
+section.band{max-width:var(--wrap);margin:0 auto;padding-block:clamp(40px,7vw,76px);padding-inline:var(--gutter);border-top:1px solid var(--rule);}
+.head{display:flex;align-items:baseline;gap:13px;margin-bottom:12px;}
+.idx{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);letter-spacing:.06em;padding-top:4px;}
+.head h2{font-family:var(--f-display);font-weight:500;font-size:clamp(23px,4.2vw,31px);letter-spacing:-.018em;}
+.note{font-size:14.5px;color:var(--ink-3);max-width:56ch;margin-bottom:26px;}
+.prose{display:flex;flex-direction:column;gap:14px;max-width:64ch;}
+.prose p{color:var(--ink-2);font-size:16.5px;line-height:1.7;}
+
+/* ------------------------------ roles ---------------------------- */
+.roles{display:flex;flex-direction:column;gap:32px;}
+.role{max-width:760px;}
+.role-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:3px 20px;}
+.role-head h3{font-family:var(--f-display);font-size:20px;font-weight:500;letter-spacing:-.014em;}
+.dates{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.org{font-size:13.5px;color:var(--ink-3);margin:3px 0 14px;}
+.points{display:flex;flex-direction:column;gap:14px;}
+.points li{display:grid;grid-template-columns:120px 1fr;gap:4px 18px;align-items:baseline;}
+.metric{font-family:var(--f-mono);font-size:12.5px;font-weight:600;color:var(--fig);font-variant-numeric:tabular-nums;border-left:2px solid var(--navy);padding-left:9px;line-height:1.45;}
+.ptext{color:var(--ink-2);font-size:15px;line-height:1.62;}
+@media (max-width:660px){.points li{grid-template-columns:1fr;gap:5px;}.metric{justify-self:start;}}
+
+/* ---------------------------- projects --------------------------- */
+.projects{display:flex;flex-direction:column;gap:13px;}
+.project{background:var(--surface);border:1px solid var(--edge);border-radius:3px;padding:clamp(16px,4vw,22px);transition:border-color 220ms ease,box-shadow 220ms ease;}
+.project:hover{border-color:color-mix(in srgb,var(--navy) 45%,var(--edge));}
+.project.is-open{border-color:var(--navy);box-shadow:0 1px 10px color-mix(in srgb,var(--ink) 8%,transparent);}
+.p-toggle{width:100%;display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;min-height:34px;cursor:pointer;text-align:left;font:inherit;color:inherit;}
+.p-n{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);flex-shrink:0;}
+.p-title{font-family:var(--f-display);font-size:clamp(17px,3.6vw,19px);font-weight:500;letter-spacing:-.014em;flex:1;transition:color 180ms ease;}
+.p-toggle:hover .p-title{color:var(--navy);}
+.chev{color:var(--ink-3);display:inline-flex;flex-shrink:0;transition:transform 280ms cubic-bezier(.3,.7,.4,1),color 180ms ease;}
+.project.is-open .chev{transform:rotate(180deg);color:var(--navy);}
+.p-sum{font-size:14.5px;color:var(--ink-2);margin-top:9px;max-width:62ch;line-height:1.6;}
+
+/* per-project results, in numbers */
+.p-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin-top:15px;background:var(--rule);border:1px solid var(--rule);border-radius:2px;overflow:hidden;}
+.p-results div{background:var(--surface);padding:11px 12px;}
+.p-results dt{font-family:var(--f-mono);font-size:16px;font-weight:600;color:var(--fig);font-variant-numeric:tabular-nums;letter-spacing:-.015em;line-height:1.2;}
+.p-results dd{font-size:11.5px;color:var(--ink-3);margin-top:4px;line-height:1.4;}
+@media (max-width:560px){.p-results{grid-template-columns:1fr;}}
+
+.panel{margin-top:15px;padding-top:15px;border-top:1px solid var(--rule);}
+.p-detail{display:flex;flex-direction:column;gap:9px;}
+.p-detail li{position:relative;padding-left:16px;font-size:14.5px;color:var(--ink-2);max-width:66ch;line-height:1.6;}
+.p-detail li::before{content:"";position:absolute;left:0;top:.68em;width:7px;height:1px;background:var(--navy);}
+.stack{display:flex;flex-wrap:wrap;gap:6px;margin-top:15px;}
+.stack li{font-family:var(--f-mono);font-size:11px;color:var(--ink-2);border:1px solid var(--edge);padding:3px 8px;border-radius:2px;}
+
+/* ---------------------------- skills ----------------------------- */
+.skills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 40px;}
+@media (max-width:660px){.skills{grid-template-columns:1fr;gap:20px;}}
+.sg h3{font-family:var(--f-mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);padding-bottom:8px;margin-bottom:11px;border-bottom:1px solid var(--rule);}
+.sg ul{display:flex;flex-wrap:wrap;gap:6px;}
+.sg li{font-size:14px;color:var(--ink-2);}
+.sg li:not(:last-child)::after{content:" ·";color:var(--ink-3);}
+.edu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 40px;margin-top:32px;padding-top:22px;border-top:1px solid var(--rule);}
+@media (max-width:660px){.edu{grid-template-columns:1fr;}}
+.edu-label{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:5px;}
+.edu p{font-size:14.5px;color:var(--ink-2);line-height:1.6;}
+
+/* ---------------------------- contacto --------------------------- */
+.c-lead{font-size:16.5px;color:var(--ink-2);max-width:54ch;margin-bottom:24px;line-height:1.68;}
+.c-list{display:flex;flex-direction:column;max-width:620px;margin-bottom:26px;}
+.c-list li{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:13px 0;border-bottom:1px solid var(--rule);min-height:52px;}
+.c-list li:first-child{border-top:1px solid var(--rule);}
+.c-label{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);width:88px;flex-shrink:0;}
+.c-val{color:var(--ink);word-break:break-word;}
+.mail-btn{font-family:var(--f-body);cursor:pointer;}
+.mail-btn.is-done{border-color:var(--navy);color:var(--navy);}
+.btn-solid.mail-btn.is-done{background:var(--navy-bright);border-color:var(--navy-bright);color:#fff;}
+.c-list a{text-decoration:none;color:var(--ink);border-bottom:1px solid var(--edge);transition:color 160ms ease,border-color 160ms ease;word-break:break-word;}
+.c-list a:hover{color:var(--navy);border-color:var(--navy);}
+.copy{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;background:var(--surface);border:1px solid var(--edge);border-radius:2px;padding:7px 10px;color:var(--ink-2);cursor:pointer;margin-left:auto;transition:color 160ms ease,border-color 160ms ease;}
+.copy:hover{color:var(--navy);border-color:var(--navy);}
+@media (max-width:440px){.c-label{width:100%;}.copy{margin-left:0;}}
+
+footer{max-width:var(--wrap);margin:0 auto;padding-block:24px 40px;padding-inline:var(--gutter);border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 20px;font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;color:var(--ink-3);}
+
+/* ------------------------- CV, dentro de la página ------------------------- */
+.cv-overlay{position:fixed;inset:0;z-index:80;background:color-mix(in srgb,var(--ink) 46%,transparent);display:flex;align-items:flex-start;justify-content:center;padding:clamp(10px,3vw,36px);overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.cv-overlay[hidden]{display:none;}
+.cv-sheet{background:var(--surface);border-radius:4px;width:min(760px,100%);box-shadow:0 12px 40px color-mix(in srgb,var(--ink) 30%,transparent);}
+.cv-bar{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:11px clamp(16px,4vw,30px);border-bottom:1px solid var(--rule);background:var(--surface);border-radius:4px 4px 0 0;}
+.cv-bar strong{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-right:auto;}
+.cv-btn{display:inline-flex;align-items:center;text-decoration:none;font-family:var(--f-body);font-size:13px;font-weight:500;padding:9px 14px;min-height:40px;border-radius:2px;cursor:pointer;border:1px solid var(--edge);background:var(--surface);color:var(--ink);transition:border-color 160ms ease,color 160ms ease;}
+.cv-btn:hover{border-color:var(--navy);color:var(--navy);}
+.cv-btn.primary{background:var(--navy);border-color:var(--navy);color:#fff;}
+.cv-btn.primary:hover{background:var(--navy-bright);border-color:var(--navy-bright);color:#fff;}
+.cv-body{padding:clamp(20px,5vw,38px);}
+.cv-body h3{font-family:var(--f-display);font-size:clamp(22px,5vw,29px);font-weight:600;letter-spacing:-.02em;margin-bottom:5px;}
+.cv-role{font-family:var(--f-mono);font-size:11.5px;color:var(--navy);letter-spacing:.02em;margin-bottom:8px;}
+.cv-contact{font-size:12.5px;color:var(--ink-2);line-height:1.7;word-break:break-word;padding-bottom:14px;border-bottom:1.5px solid var(--ink);}
+.cv-body h4{font-family:var(--f-mono);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.11em;color:var(--ink-3);margin:22px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--rule);}
+.cv-body p.s{font-size:13.5px;color:var(--ink-2);line-height:1.65;}
+.cv-e{margin-bottom:14px;}
+.cv-e:last-child{margin-bottom:0;}
+.cv-eh{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 14px;}
+.cv-et{font-size:14.5px;font-weight:600;}
+.cv-ed{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);white-space:nowrap;}
+.cv-eo{font-size:12.5px;color:var(--ink-3);margin:2px 0 7px;}
+.cv-p{display:flex;flex-direction:column;gap:6px;}
+.cv-p li{position:relative;padding-left:14px;font-size:13.5px;color:var(--ink-2);line-height:1.6;}
+.cv-p li::before{content:"";position:absolute;left:0;top:.62em;width:5px;height:5px;background:var(--navy);}
+.cv-p b{color:var(--fig);font-family:var(--f-mono);font-size:12.5px;font-weight:600;}
+.cv-sk{display:grid;grid-template-columns:132px 1fr;gap:7px 14px;}
+@media (max-width:520px){.cv-sk{grid-template-columns:1fr;gap:3px 0;}.cv-sk span{margin-top:8px;}}
+.cv-sk span{font-family:var(--f-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);font-weight:600;}
+.cv-sk p{font-size:13.5px;color:var(--ink-2);line-height:1.6;}
+body.cv-locked{overflow:hidden;}
+
+@media print{
+  body>nav,body>main,body>footer,.cv-bar{display:none!important;}
+  .cv-overlay{position:static;padding:0;background:none;display:block!important;overflow:visible;}
+  .cv-overlay[hidden]{display:block!important;}
+  .cv-sheet{width:100%;box-shadow:none;border-radius:0;}
+  .cv-body{padding:0;}
+  .cv-body h4{margin-top:15px;}
+  body{background:#fff;}
+}
+</style>
+
+<a class="skip" href="#inicio">Saltar al contenido</a>
+
+<nav aria-label="Secciones">
+  <div class="nav-inner">
+    <a class="wordmark" href="#inicio">
+      <span class="wm-name">Leonardo Malavé</span>
+      <span class="wm-role">Automatización e IA</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#sobre-mi">Sobre mí</a></li>
+      <li><a href="#experiencia">Experiencia</a></li>
+      <li><a href="#proyectos">Proyectos</a></li>
+      <li><a href="#habilidades">Habilidades</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+  <section class="hero" id="inicio">
+    <p class="eyebrow" data-reveal>Desarrollador junior de automatización e IA · La Plata, Argentina</p>
+    <h1 data-reveal>Automatizo las tareas repetitivas que tu equipo todavía hace <em>a mano</em>.</h1>
+    <p class="lead" data-reveal>Con n8n, Python y APIs REST construyo procesos que corren solos, avisan cuando algo falla y quedan documentados para que cualquiera los mantenga.</p>
+    <ul class="for-who" data-reveal>
+      <li>Pymes</li><li>Equipos de operaciones</li><li>Atención al cliente</li><li>Administración y datos</li>
+    </ul>
+    <div class="actions" data-reveal>
+      <button type="button" class="btn-solid cv-open"><span>Ver mi CV</span><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 1.8v9.1m0 0L4.6 7.5M8 10.9l3.4-3.4M2.4 13.6h11.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button type="button" class="btn-line mail-btn"><span class="mail-label">Escribime</span><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M1.9 4.4h12.2v7.2H1.9zM1.9 4.7 8 8.9l6.1-4.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+    <dl class="figures" data-reveal>
+      <div><dt>45 min/día</dt><dd>de cierre manual eliminados</dd></div>
+      <div><dt>92 %</dt><dd>menos tiempo en conciliar 500 movimientos</dd></div>
+      <div><dt>3</dt><dd>automatizaciones construidas de punta a punta</dd></div>
+    </dl>
+  </section>
+
+  <section class="band" id="sobre-mi">
+    <div class="head" data-reveal><span class="idx">01</span><h2>Sobre mí</h2></div>
+    <div class="prose" data-reveal>
+      <p>Estudio Ingeniería en Sistemas de Información en la UTN La Plata. Empecé a automatizar por una razón concreta y no por curiosidad teórica: trabajo de noche en una pizzería y el cierre operativo se llevaba 45 minutos de planilla todos los días.</p>
+      <p>Escribí un script para que lo hiciera solo. Hoy corre sin que yo intervenga, deja el reporte listo y separa aparte los pedidos que necesitan que una persona los mire. Detecta errores de facturación que antes pasaban de largo.</p>
+      <p>Así es como trabajo: busco un proceso manual real, lo mido antes de tocarlo, lo automatizo y lo documento para que otra persona pueda mantenerlo sin llamarme. Me interesa que lo que construyo siga funcionando cuando yo no estoy mirando, que es una condición más exigente que hacerlo andar una vez.</p>
+      <p>Ahora busco un puesto junior donde pueda hacer esto sobre procesos de negocio reales, con gente con más experiencia que me marque lo que todavía no veo.</p>
+    </div>
+  </section>
+
+  <section class="band" id="experiencia">
+    <div class="head" data-reveal><span class="idx">02</span><h2>Experiencia</h2></div>
+    <p class="note" data-reveal>Cada línea dice qué logré, cómo lo medí y qué hice para lograrlo.</p>
+    <div class="roles">
+      <article class="role" data-reveal>
+        <div class="role-head"><h3>Automatización del cierre operativo diario</h3><span class="dates">Jul. 2026 — Actualidad</span></div>
+        <p class="org">Iniciativa propia · Pizzería donde trabajo, La Plata</p>
+        <ul class="points">
+          <li><span class="metric">45 min/día</span><span class="ptext">Eliminé 45 minutos diarios de cierre manual, medido contra el proceso en planilla que se hacía a mano, al escribir un script en Python que valida los pedidos del día y publica un reporte de cierre todas las noches a las 23:30.</span></li>
+          <li><span class="metric">12 por mes</span><span class="ptext">Detecté 12 incidencias de facturación por mes que antes pasaban sin revisión, medido por el archivo de pedidos observados que genera el proceso, al implementar reglas de validación sobre registros, montos y ventas por medio de pago.</span></li>
+          <li><span class="metric">60 corridas</span><span class="ptext">Sostuve 60 ejecuciones programadas consecutivas sin intervención manual, medido por el registro de ejecución, al incorporar manejo de errores que documenta qué archivo o paso falló en lugar de fallar en silencio.</span></li>
+        </ul>
+      </article>
+      <article class="role" data-reveal>
+        <div class="role-head"><h3>Automatizaciones de extremo a extremo</h3><span class="dates">Ago. 2025 — Actualidad</span></div>
+        <p class="org">Proyectos autodirigidos · n8n, OpenAI, PostgreSQL</p>
+        <ul class="points">
+          <li><span class="metric">3 h → 15 min</span><span class="ptext">Reduje la conciliación de 500 movimientos bancarios de 3 horas a 15 minutos, medido cronometrando el proceso manual contra el automatizado, al construir un flujo en n8n que normaliza, cruza y reporta discrepancias en Google Sheets.</span></li>
+          <li><span class="metric">80 %</span><span class="ptext">Resolví el 80 % de las consultas sin intervención humana sobre 120 casos de prueba, medido por tasa de escalado, al desarrollar un asistente con OpenAI API y recuperación RAG sobre Supabase y PostgreSQL.</span></li>
+          <li><span class="metric">5 APIs</span><span class="ptext">Integré 5 APIs REST y webhooks de terceros con manejo de JSON y reintentos, medido por ejecuciones sin fallo, al estandarizar la capa de conexión y el escalado a soporte humano vía Telegram Bot API.</span></li>
+        </ul>
+      </article>
+      <article class="role" data-reveal>
+        <div class="role-head"><h3>Editor de video y gestor de canal</h3><span class="dates">Oct. 2021 — Actualidad</span></div>
+        <p class="org">El Profe Endel (YouTube) · Freelance</p>
+        <ul class="points">
+          <li><span class="metric">4 años</span><span class="ptext">Sostuve 4 entregas mensuales durante cuatro años sin incumplir un plazo, medido contra el calendario de publicación acordado, al montar un sistema propio de organización de archivos y edición en Adobe Premiere Pro.</span></li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="band" id="proyectos">
+    <div class="head" data-reveal><span class="idx">03</span><h2>Proyectos</h2></div>
+    <p class="note" data-reveal>Tres casos, con el resultado medido arriba y el detalle técnico adentro.</p>
+    <div class="projects">
+
+      <article class="project is-open" data-reveal>
+        <h3 style="margin:0"><button type="button" class="p-toggle" aria-expanded="true" aria-controls="pp1">
+          <span class="p-n">01</span><span class="p-title">Cierre operativo diario</span>
+          <span class="chev" aria-hidden="true"><svg viewBox="0 0 16 16" width="15" height="15"><path d="M4 6.2 8 10.2l4-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button></h3>
+        <p class="p-sum">Un proceso que corre solo cada noche, valida los pedidos del día y deja un reporte listo para revisar a la mañana siguiente.</p>
+        <dl class="p-results">
+          <div><dt>45 min</dt><dd>ahorrados por día</dd></div>
+          <div><dt>12/mes</dt><dd>incidencias de facturación detectadas</dd></div>
+          <div><dt>60</dt><dd>corridas seguidas sin intervención</dd></div>
+        </dl>
+        <div class="panel" id="pp1">
+          <ul class="p-detail">
+            <li>Lee el archivo de pedidos del día y verifica que cada registro esté completo y sea coherente antes de contarlo.</li>
+            <li>Genera tres salidas: un reporte de cierre legible, un archivo aparte con los pedidos que necesitan revisión humana, y un registro de ejecución.</li>
+            <li>Informa filas procesadas, registros válidos, facturación válida, incidencias detectadas y ventas por medio de pago.</li>
+            <li>Si algo falla, no inventa resultados: escribe en el registro qué archivo o qué paso falló y por qué.</li>
+          </ul>
+        </div>
+        <ul class="stack"><li>Python</li><li>Tareas programadas</li><li>CSV</li><li>Validación de datos</li></ul>
+      </article>
+
+      <article class="project" data-reveal>
+        <h3 style="margin:0"><button type="button" class="p-toggle" aria-expanded="false" aria-controls="pp2">
+          <span class="p-n">02</span><span class="p-title">Asistente de atención al cliente con IA</span>
+          <span class="chev" aria-hidden="true"><svg viewBox="0 0 16 16" width="15" height="15"><path d="M4 6.2 8 10.2l4-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button></h3>
+        <p class="p-sum">Un asistente que responde consultas recuperando información interna, mantiene el contexto de la conversación y sabe cuándo pasarle el caso a una persona.</p>
+        <dl class="p-results">
+          <div><dt>80 %</dt><dd>de consultas resueltas sin humano</dd></div>
+          <div><dt>120</dt><dd>casos de prueba documentados</dd></div>
+          <div><dt>90 %</dt><dd>menos respuestas duplicadas</dd></div>
+        </dl>
+        <div class="panel" id="pp2" hidden>
+          <ul class="p-detail">
+            <li>Recupera información desde una base propia mediante RAG en lugar de responder solo con lo que el modelo recuerda.</li>
+            <li>Guarda la memoria conversacional en PostgreSQL, así el hilo sobrevive entre mensajes.</li>
+            <li>Incluye un buffer que agrupa mensajes consecutivos: sin él, escribir tres líneas seguidas disparaba tres respuestas.</li>
+            <li>Deriva a soporte humano con el contexto completo cuando el caso queda fuera de lo que puede resolver.</li>
+          </ul>
+        </div>
+        <ul class="stack"><li>n8n</li><li>OpenAI API</li><li>Telegram Bot API</li><li>Supabase</li><li>PostgreSQL</li><li>RAG</li></ul>
+      </article>
+
+      <article class="project" data-reveal>
+        <h3 style="margin:0"><button type="button" class="p-toggle" aria-expanded="false" aria-controls="pp3">
+          <span class="p-n">03</span><span class="p-title">Conciliación bancaria automatizada</span>
+          <span class="chev" aria-hidden="true"><svg viewBox="0 0 16 16" width="15" height="15"><path d="M4 6.2 8 10.2l4-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button></h3>
+        <p class="p-sum">Un flujo que compara movimientos contra registros, normaliza los datos y deja las diferencias señaladas en una planilla trazable.</p>
+        <dl class="p-results">
+          <div><dt>3 h → 15 min</dt><dd>por lote conciliado</dd></div>
+          <div><dt>500</dt><dd>movimientos procesados por corrida</dd></div>
+          <div><dt>92 %</dt><dd>menos tiempo de revisión manual</dd></div>
+        </dl>
+        <div class="panel" id="pp3" hidden>
+          <ul class="p-detail">
+            <li>Importa y normaliza los movimientos antes de cruzarlos, que es donde se rompen la mayoría de las conciliaciones manuales.</li>
+            <li>Cruza cada movimiento contra el registro correspondiente y marca las diferencias en lugar de descartarlas.</li>
+            <li>Devuelve el resultado en Google Sheets, para que la revisión final quede en una herramienta que el equipo ya usa.</li>
+            <li>Las reglas de validación se fueron ajustando sobre casos reales hasta reducir los falsos positivos.</li>
+          </ul>
+        </div>
+        <ul class="stack"><li>n8n</li><li>Google Sheets</li><li>JavaScript</li><li>JSON</li></ul>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="band" id="habilidades">
+    <div class="head" data-reveal><span class="idx">04</span><h2>Habilidades</h2></div>
+    <div class="skills">
+      <div class="sg" data-reveal><h3>Automatización e IA</h3><ul><li>n8n</li><li>Workflows multi-paso</li><li>Tareas programadas</li><li>OpenAI API</li><li>Asistentes de IA</li><li>RAG</li><li>Diseño de prompts</li></ul></div>
+      <div class="sg" data-reveal><h3>Integraciones y datos</h3><ul><li>APIs REST</li><li>Webhooks</li><li>JSON</li><li>PostgreSQL</li><li>Supabase</li><li>SQL</li><li>Google Sheets</li><li>Telegram Bot API</li><li>CSV</li></ul></div>
+      <div class="sg" data-reveal><h3>Programación</h3><ul><li>Python</li><li>JavaScript</li><li>Node.js</li><li>Git</li><li>GitHub</li><li>HTML</li><li>CSS</li></ul></div>
+      <div class="sg" data-reveal><h3>Calidad y proceso</h3><ul><li>Testing de flujos</li><li>Debugging</li><li>Manejo de errores</li><li>Logging</li><li>Documentación técnica</li><li>Análisis de procesos</li></ul></div>
+    </div>
+    <div class="edu" data-reveal>
+      <div><span class="edu-label">Formación</span><p>Ingeniería en Sistemas de Información — Universidad Tecnológica Nacional, Facultad Regional La Plata. En curso.</p></div>
+      <div><span class="edu-label">Idiomas</span><p>Español nativo. Inglés intermedio (B1): leo documentación técnica y me comunico por escrito.</p></div>
+    </div>
+  </section>
+
+  <section class="band" id="contacto">
+    <div class="head" data-reveal><span class="idx">05</span><h2>Contacto</h2></div>
+    <p class="c-lead" data-reveal>Si tenés un proceso que se hace a mano todos los días, escribime y te digo con franqueza si se puede automatizar y qué haría falta.</p>
+    <ul class="c-list" data-reveal>
+      <li><span class="c-label">Correo</span><span class="c-val" id="mail-text">leonardojosemalave@gmail.com</span><button type="button" class="copy" id="copy-btn">Copiar</button></li>
+      <li><span class="c-label">Teléfono</span><a href="tel:+5492212010216">+54 9 221 201 0216</a></li>
+      <li><span class="c-label">LinkedIn</span><a href="https://linkedin.com/in/leonardomalave" target="_blank" rel="noreferrer">linkedin.com/in/leonardomalave</a></li>
+      <li><span class="c-label">Ubicación</span><span>La Plata, Buenos Aires, Argentina</span></li>
+    </ul>
+    <div class="actions" data-reveal>
+      <button type="button" class="btn-solid mail-btn"><span class="mail-label">Escribime</span></button>
+      <button type="button" class="btn-line cv-open"><span>Ver mi CV</span></button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>Leonardo José Malavé</span>
+  <span>La Plata, Argentina · 2026</span>
+</footer>
+
+<div class="cv-overlay" id="cv-overlay" role="dialog" aria-modal="true" aria-label="Currículum de Leonardo Malavé" hidden>
+  <div class="cv-sheet">
+    <div class="cv-bar">
+      <strong>Currículum</strong>
+      <a class="cv-btn primary" href="CV-Leonardo-Malave.pdf" download>Descargar PDF</a>
+      <button type="button" class="cv-btn" id="cv-print">Imprimir</button>
+      <button type="button" class="cv-btn" id="cv-close">Cerrar</button>
+    </div>
+    <div class="cv-body">
+      <h3>Leonardo José Malavé</h3>
+      <p class="cv-role">Desarrollador Junior de Automatización e IA · n8n · Python · APIs REST · RAG</p>
+      <p class="cv-contact">La Plata, Buenos Aires, Argentina · leonardojosemalave@gmail.com · +54 9 221 201 0216 · linkedin.com/in/leonardomalave</p>
+
+      <h4>Perfil profesional</h4>
+      <p class="s">Estudiante de Ingeniería en Sistemas de Información en la UTN La Plata. Construyo y opero automatizaciones en producción con n8n, Python, OpenAI API y PostgreSQL. Diseño flujos que eliminan trabajo manual repetitivo, integro sistemas mediante APIs REST y webhooks, y documento cada proceso para que otra persona pueda mantenerlo. Busco un rol junior en automatización, integraciones y datos.</p>
+
+      <h4>Experiencia en automatización e IA</h4>
+      <div class="cv-e">
+        <div class="cv-eh"><span class="cv-et">Automatización del cierre operativo diario — iniciativa propia</span><span class="cv-ed">Jul. 2026 — Actualidad</span></div>
+        <p class="cv-eo">Pizzería donde trabajo — La Plata, Argentina</p>
+        <ul class="cv-p">
+          <li>Eliminé <b>45 minutos</b> diarios de cierre operativo manual, medido contra el proceso en planilla que se hacía a mano, al desarrollar un script en Python que valida los pedidos del día y publica un reporte de cierre automático todas las noches a las 23:30.</li>
+          <li>Detecté <b>12 incidencias</b> de facturación por mes que antes pasaban sin revisión, medido por el archivo de pedidos observados que genera el proceso, al implementar reglas de validación sobre registros, montos y ventas por medio de pago.</li>
+          <li>Sostuve <b>60 ejecuciones</b> programadas consecutivas sin intervención manual, medido por el registro de ejecución, al incorporar manejo de errores que documenta qué archivo o paso falló en lugar de fallar en silencio.</li>
+        </ul>
+      </div>
+      <div class="cv-e">
+        <div class="cv-eh"><span class="cv-et">Automatizaciones de extremo a extremo — n8n, OpenAI, PostgreSQL</span><span class="cv-ed">Ago. 2025 — Actualidad</span></div>
+        <p class="cv-eo">Proyectos autodirigidos — La Plata, Argentina</p>
+        <ul class="cv-p">
+          <li>Reduje la conciliación de 500 movimientos bancarios de <b>3 h a 15 min</b>, medido cronometrando el proceso manual contra el automatizado, al construir un workflow en n8n que normaliza, cruza y reporta discrepancias en Google Sheets.</li>
+          <li>Resolví el <b>80 %</b> de las consultas sin intervención humana sobre 120 casos de prueba, medido por tasa de escalado, al desarrollar un asistente con OpenAI API y recuperación RAG sobre Supabase/PostgreSQL.</li>
+          <li>Eliminé el <b>90 %</b> de las respuestas duplicadas ante mensajes consecutivos, medido comparando logs antes y después, al implementar un buffer de mensajes y memoria conversacional persistente en PostgreSQL.</li>
+          <li>Integré <b>5 APIs REST</b> y webhooks de terceros con manejo de JSON y reintentos, medido por ejecuciones sin fallo, al estandarizar la capa de conexión y el escalado a soporte humano vía Telegram Bot API.</li>
+        </ul>
+      </div>
+      <div class="cv-e">
+        <div class="cv-eh"><span class="cv-et">Editor de video y gestor de canal</span><span class="cv-ed">Oct. 2021 — Actualidad</span></div>
+        <p class="cv-eo">El Profe Endel (YouTube) — Freelance</p>
+        <ul class="cv-p">
+          <li>Sostuve <b>4 entregas mensuales</b> durante cuatro años sin incumplir un plazo, medido contra el calendario de publicación acordado, al montar un sistema propio de organización de assets y edición en Adobe Premiere Pro.</li>
+        </ul>
+      </div>
+
+      <h4>Competencias técnicas</h4>
+      <div class="cv-sk">
+        <span>Automatización e IA</span><p>n8n, workflows multi-paso, tareas programadas, OpenAI API, asistentes y agentes de IA, RAG, diseño de prompts</p>
+        <span>Integraciones y datos</span><p>APIs REST, webhooks, JSON, PostgreSQL, Supabase, SQL, Google Sheets, Telegram Bot API, CSV/ETL</p>
+        <span>Programación</span><p>Python, JavaScript / Node.js, Git y GitHub, HTML, CSS</p>
+        <span>Calidad y proceso</span><p>Testing de workflows, debugging, manejo de errores, logging, documentación técnica, análisis de procesos</p>
+      </div>
+
+      <h4>Educación</h4>
+      <div class="cv-e">
+        <div class="cv-eh"><span class="cv-et">Ingeniería en Sistemas de Información</span><span class="cv-ed">2021 — En curso</span></div>
+        <p class="cv-eo">Universidad Tecnológica Nacional, Facultad Regional La Plata</p>
+        <ul class="cv-p"><li>Materias en curso: Algoritmos y Estructuras de Datos, Arquitectura de Computadoras, Análisis Matemático II.</li></ul>
+      </div>
+
+      <h4>Idiomas</h4>
+      <div class="cv-sk">
+        <span>Español</span><p>Nativo</p>
+        <span>Inglés</span><p>Intermedio (B1) — lectura de documentación técnica y comunicación escrita</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var ov = document.getElementById("cv-overlay");
+  var lastFocus = null;
+  function openCV(e){
+    lastFocus = e && e.currentTarget ? e.currentTarget : null;
+    ov.hidden = false;
+    document.body.classList.add("cv-locked");
+    var c = document.getElementById("cv-close");
+    if (c) c.focus();
+  }
+  function closeCV(){
+    ov.hidden = true;
+    document.body.classList.remove("cv-locked");
+    if (lastFocus) lastFocus.focus();
+  }
+  document.querySelectorAll(".cv-open").forEach(function(b){ b.addEventListener("click", openCV); });
+  document.getElementById("cv-close").addEventListener("click", closeCV);
+  document.getElementById("cv-print").addEventListener("click", function(){ window.print(); });
+  ov.addEventListener("click", function(e){ if (e.target === ov) closeCV(); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape" && !ov.hidden) closeCV(); });
+
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.documentElement.classList.add("has-reveal");
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -10% 0px", threshold: 0.06 });
+    document.querySelectorAll("[data-reveal]").forEach(function (el) { io.observe(el); });
+  }
+
+  var links = Array.prototype.slice.call(document.querySelectorAll(".nav-links a"));
+  var spy = new IntersectionObserver(function (es) {
+    var vis = es.filter(function (e) { return e.isIntersecting; })
+      .sort(function (x, y) { return y.intersectionRatio - x.intersectionRatio; })[0];
+    if (!vis) return;
+    links.forEach(function (l) { l.classList.toggle("is-active", l.getAttribute("href") === "#" + vis.target.id); });
+  }, { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.6] });
+  document.querySelectorAll("section.band").forEach(function (s) { spy.observe(s); });
+
+  document.querySelectorAll(".p-toggle").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var card = btn.closest(".project");
+      var panel = document.getElementById(btn.getAttribute("aria-controls"));
+      var open = card.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      panel.hidden = !open;
+    });
+  });
+
+  var EMAIL = "leonardojosemalave@gmail.com";
+  function copyEmail(done){
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(EMAIL).then(function(){ done(true); }, function(){ done(false); });
+      return;
+    }
+    done(false);
+  }
+
+  var cb = document.getElementById("copy-btn");
+  if (cb) cb.addEventListener("click", function () {
+    copyEmail(function(ok){
+      cb.textContent = ok ? "Copiado" : "Seleccioná y copiá";
+      setTimeout(function () { cb.textContent = "Copiar"; }, 2400);
+    });
+  });
+
+  // "Escribime" copia la dirección en lugar de navegar: los marcos aislados
+  // bloquean mailto:, y una pantalla de error es peor que un correo copiado.
+  document.querySelectorAll(".mail-btn").forEach(function (btn) {
+    var label = btn.querySelector(".mail-label");
+    var original = label.textContent;
+    btn.addEventListener("click", function () {
+      copyEmail(function(ok){
+        label.textContent = ok ? "Correo copiado ✓" : EMAIL;
+        btn.classList.add("is-done");
+        setTimeout(function () { label.textContent = original; btn.classList.remove("is-done"); }, 3000);
+      });
+    });
+  });
+})();
+</script>
